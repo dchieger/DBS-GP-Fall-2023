@@ -103,6 +103,7 @@ def create_tables():
         CREATE TABLE IF NOT EXISTS transactions (
             id INT AUTO_INCREMENT PRIMARY KEY,
             member_id INT,
+            transactions_amount INT,
             card_type VARCHAR(99),
             card_holder VARCHAR(99),
             card_number VARCHAR(99),
@@ -167,6 +168,7 @@ def gen_x_transaction(x):
     
     for new_transaction in range(x):
         cc_transaction = fake.credit_card_full()
+        transactions_amount = random.randint(1, 500)
         card_type, card_holder, card_number, expiry_date, cvc = cc_transaction.split('\n')
         card_type = card_type.strip()
         card_holder = card_holder.strip()
@@ -177,8 +179,8 @@ def gen_x_transaction(x):
         # Get a random member ID
         random_member_id = get_random_member_id()
     
-        insert_transaction_query = "INSERT INTO transactions (member_id, card_type, card_holder, card_number, expiry_date, cvc) VALUES (%s, %s, %s, %s, %s, %s)"
-        data = (random_member_id, card_type, card_holder, card_number, expiry_date, cvc)
+        insert_transaction_query = "INSERT INTO transactions (member_id, transactions_amount, card_type, card_holder, card_number, expiry_date, cvc) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+        data = (random_member_id, transactions_amount, card_type, card_holder, card_number, expiry_date, cvc)
         cursor.execute(insert_transaction_query, data)
     
     connection.commit()
@@ -472,28 +474,6 @@ def get_totals():
     print(f'Total records in Attendance Table: {total_rec_attendance}')
     print(f'Total records in all tables: {total_rec_all}')
 
-#create_tables()
-
-#print("Calling gen_x_classes function")
-#gen_x_classes(99)
-
-#print("Calling gen_x_members function")
-#gen_x_members(99)
-
-#print("Calling gen_x_transaction function")
-#gen_x_transaction(1)
-
-#print("Calling gen_x_attendance function")
-#gen_x_attendance(99)
-
-#print("Calling gen_x_courses function")
-#gen_x_courses(99)
-
-#print("Calling gen_x_employees function")
-#gen_x_employees(99)
-
-#print("Calling gen_x_equipment function")
-#gen_x_equipment(1)
 '''
 A report query that uses a JOIN (any type) to report on some aggregate value based on a group by clause.
 '''
@@ -566,8 +546,109 @@ def get_class_with_highest_attendance_from_view():
     for row in results:
         print(f"Class ID: {row[0]}, Instructor: {row[1]}, Total Attendance: {row[2]}")
 
-get_class_with_highest_attendance_from_view()
-get_class_attendance()
-get_class_with_highest_attendance()
-#create_class_attendance_view()
+#Create average class attendance procedure
+def create_average_class_attendance_procedure():
+    # Write the SQL query
+    query = """
+        CREATE PROCEDURE average_class_attendance()
+        BEGIN
+            SELECT c.class_id, AVG(a.attendance_id) as average_attendance
+            FROM classes c
+            JOIN attendance a ON c.class_id = a.class_id
+            GROUP BY c.class_id;
+        END
+    """
+
+    cursor.execute(query)
+
+#call procedure defined above ^^^^
+def call_average_class_attendance_procedure(cursor):
+    # Write the SQL query
+    query = "CALL average_class_attendance()"
+
+    # Execute the query
+    cursor.execute(query)
+
+    # Fetch and print the results
+    results = cursor.fetchall()
+    for row in results:
+        print(f"Class ID: {row[0]}, Average Attendance: {row[1]}")
+
+def create_mark_all_present_procedure():
+    # Write the SQL query
+    query = """
+        CREATE PROCEDURE mark_all_present(IN class_id INT)
+        BEGIN
+            DECLARE done INT DEFAULT FALSE;
+            DECLARE a_id INT;
+            DECLARE cur CURSOR FOR SELECT attendance_id FROM attendance WHERE class_id = class_id;
+            DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+            OPEN cur;
+
+            read_loop: LOOP
+                FETCH cur INTO a_id;
+                IF done THEN
+                    LEAVE read_loop;
+                END IF;
+                UPDATE attendance SET status = 'Present' WHERE attendance_id = a_id;
+            END LOOP;
+
+            CLOSE cur;
+        END
+    """
+
+    # Execute the query
+    cursor.execute(query)
+    print("Stored procedure 'mark_all_present' created successfully.")
+
+def create_after_member_insert_trigger():
+    # Write the SQL query
+    query = """
+        CREATE TRIGGER after_member_insert
+        AFTER INSERT ON member FOR EACH ROW
+        BEGIN
+            INSERT INTO payment (payment_date, amount, payment_method, member_id)
+            VALUES (NOW(), '100', 'Credit Card', NEW.member_id);
+        END;
+    """
+
+    # Execute the query
+    cursor.execute(query)
+
+def insert_member_and_trigger_payment():
+    # Write the SQL query
+    query = """
+        INSERT INTO member (first_name, last_name, phone, email, dob, membership_start_date, membership_end_date)
+        VALUES ('John', 'Doe', '555-1234', 'john.doe@example.com', '1980-01-01', '2023-01-01', '2023-12-31');
+    """
+
+    # Execute the query
+    cursor.execute(query)
+
+def create_total_transactions_amount_procedure():
+    # Write the SQL query
+    query = """
+        CREATE PROCEDURE total_transactions_amount(IN member_id INT)
+        BEGIN
+            SELECT SUM(transactions_amount)
+            FROM transactions
+            WHERE member_id = member_id;
+        END
+    """
+
+    # Execute the query
+    cursor.execute(query)
+    print("Stored procedure 'total_transactions_amount' created successfully.")
+
+#create_tables()
+gen_x_members(999)
+gen_x_employees(999)
+gen_x_courses(999)
+gen_x_classes(999)
+gen_x_transaction(999)
+gen_x_attendance(999)
+gen_x_equipment(999)
     
+print_em_out()
+get_totals()
