@@ -566,8 +566,64 @@ def get_class_with_highest_attendance_from_view():
     for row in results:
         print(f"Class ID: {row[0]}, Instructor: {row[1]}, Total Attendance: {row[2]}")
 
+def create_membership_payment_trigger():
+    trigger_query = """
+    CREATE TRIGGER after_member_insert
+    AFTER INSERT ON member
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO payment (payment_date, amount, payment_method, member_id)
+        VALUES (NOW(), '100', 'Credit Card', NEW.member_id);
+    END;
+    """
+
+    try:
+        cursor.execute(trigger_query)
+        connection.commit()  
+        print("Trigger 'after_member_insert' created successfully.")
+    except mysql.connector.Error as err:
+        print(f"An error occurred: {err}")
+
+def insert_new_member(first_name, last_name, phone, email, dob, start_date, end_date):
+    # Write the SQL query to insert a new member
+    insert_query = """
+    INSERT INTO member (first_name, last_name, phone, email, dob, membership_start_date, membership_end_date)
+    VALUES (%s, %s, %s, %s, %s, %s, %s);
+    """
+    member_values = (first_name, last_name, phone, email, dob, start_date, end_date)
+
+    # Execute the insert query
+    try:
+        cursor.execute(insert_query, member_values)
+        connection.commit()  # Commit the transaction
+        print("New member inserted successfully.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+def demo_trigger():
+    # Insert a new member to demonstrate the trigger
+    insert_new_member('Jane', 'Doe', '555-6789', 'jane.doe@example.com', '1990-05-15', '2023-01-01', '2024-01-01')
+
+    # Assuming member_id is auto-increment, fetch the last inserted id
+    member_id = cursor.lastrowid
+    
+    # Query the payment table to show the payment record inserted by the trigger
+    payment_query = "SELECT * FROM payment WHERE member_id = %s;"
+    try:
+        cursor.execute(payment_query, (member_id,))
+        results = cursor.fetchall() # Fetch all results
+        for row in results:
+          
+            print(f"Payment ID: {row[0]}, Payment Date: {row[1]}, Amount: {row[2]}, Payment Method: {row[3]}, Member ID: {row[4]}")
+    except Exception as e:
+        print(f"An error occurred when trying to fetch payment record: {e}")
+
+
+create_membership_payment_trigger()
+demo_trigger()
 get_class_with_highest_attendance_from_view()
 get_class_attendance()
 get_class_with_highest_attendance()
 #create_class_attendance_view()
+    
     
