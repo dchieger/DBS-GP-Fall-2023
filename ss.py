@@ -359,7 +359,7 @@ def gen_x_lost_and_found_items(x):
 
 def gen_x_visitors_log_entries(x):
     for new_entry in range(x):
-        member_id = random.randint(1, 3)  # Random member ID between 1 and 100
+        member_id = random.randint(1, 100)  # Random member ID between 1 and 100
         check_in_time = fake.date_time_this_year()  # Check-in time within the current year
 
         insert_log_entry_query = """
@@ -398,6 +398,10 @@ def genesis():
     create_members_table()
     create_employees_table()
     create_employee_salary_statistics_table()
+
+    #TRIGGER
+    create_salary_statistics_trigger()
+
     create_product_inventory_table()
     create_equipment_inventory_table()
     create_transaction_table()
@@ -405,10 +409,13 @@ def genesis():
     create_visitors_log_table()
     create_classes_table()
 
+
     #There must be atleast 100 employees and members in our database
     #The func of the rest of the generation classes grabs a random number from 1-100 corresponding to the member and employee id
     gen_x_members(100)
-    gen_x_employees(100)
+    gen_x_employees(1)
+    gen_x_employees(99)
+
 
     gen_x_products(50)
     gen_x_equipment(50)
@@ -474,8 +481,7 @@ def report_employee_classes():
     """
     cursor.execute(query)
     result = cursor.fetchall()
-    for row in result:
-        print(row)
+    return result
 
 #create a view and give the average of the numbers of employees who taught more than one class
 def create_employee_classes_view():
@@ -496,8 +502,18 @@ def view_employee_classes_view():
     query = "SELECT * FROM EmployeeClassesView"
     cursor.execute(query)
     result = cursor.fetchall()
-    for row in result:
-        print(row)
+    return result
+
+#Requirement 2
+def get_employees_with_above_average_salary():
+    query = """
+    SELECT EmployeeID, FirstName, LastName, Salary
+    FROM Employees
+    WHERE Salary > (SELECT AVG(Salary) FROM Employees)
+    """
+    cursor.execute(query)
+    result = cursor.fetchall()
+    return result
 
 #A stored procedure that can be called by a query to perform some math operation on the data and returns a value(s).
 def create_total_transaction_amount_procedure():
@@ -558,17 +574,18 @@ def print_employee_salaries():
     for row in result:
         print(f"\n{row[0]} {row[1]}: {row[2]}\n")
 
+# (Y1) Create a trigger to track the total and avg salary of all employees and log it 
 def create_salary_statistics_trigger():
-   # genesis_query = '''
-   # INSERT INTO EmployeeSalaryStatistics (TotalSalary, AverageSalary)
-   # VALUES (0, 0)
-   # ON DUPLICATE KEY UPDATE ID = ID;
-   # '''
-   # try:
-    #    cursor.execute(genesis_query)
-   #     print("genesis_querysuccessfully. OKOKOK")
-   # except mysql.connector.ProgrammingError:
-     #   print("genesis_query FAILURE")
+    genesis_query = '''
+    INSERT INTO EmployeeSalaryStatistics (TotalSalary, AverageSalary)
+    VALUES (0, 0)
+    ON DUPLICATE KEY UPDATE ID = ID;
+    '''
+    try:
+        cursor.execute(genesis_query)
+        print("genesis_query successfully. OKOKOK")
+    except mysql.connector.ProgrammingError:
+        print("genesis_query FAILURE")
 
     query = """
     DELIMITER //
@@ -582,12 +599,10 @@ def create_salary_statistics_trigger():
         SELECT SUM(Salary) INTO totalSalary FROM Employees;
         SELECT AVG(Salary) INTO averageSalary FROM Employees;
 
-        UPDATE EmployeeSalaryStatistics
-        SET TotalSalary = totalSalary,
-            AverageSalary = averageSalary
-        WHERE ID = 1;
+        INSERT INTO EmployeeSalaryStatistics (TotalSalary, AverageSalary)
+        VALUES (totalSalary, averageSalary);
     END //
-    DELIMITER ;
+    DELIMITER;
     """
     try:
         cursor.execute(query)
@@ -595,6 +610,7 @@ def create_salary_statistics_trigger():
     except mysql.connector.ProgrammingError:
         print("Trigger 'update_salary_statistics' already exists.")
 
+# (Y2) View the triggers and how they have effected the database      
 def print_salary_statistics():
     query = "SELECT * FROM EmployeeSalaryStatistics"
     cursor.execute(query)
@@ -607,25 +623,4 @@ def print_salary_statistics():
 
 
 #genesis()
-#create_employee_salary_statistics_table()
-create_salary_statistics_trigger()
-#create_employees_table()
-#create_salary_statistics_trigger()
-
-#has to have something to calculate
-#calculate_and_insert_salary_statistics()
-#gen_x_employees(10)
-
-#print_salary_statistics()
-gen_x_employees(10)
-print_salary_statistics()
-#print_salary_statistics()
-
-
-'''
-print("BEFORE")
-print_employee_salaries()
-call_increase_salaries_procedure(100)
-print("AFTER")
-print_employee_salaries()
-'''
+view_employee_classes_view()

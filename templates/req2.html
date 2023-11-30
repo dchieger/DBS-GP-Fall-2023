@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employees with Above Average Salary</title>
+</head>
+<body>
+    <h1>Employees with Above Average Salary</h1>
+    <pre>
+        SELECT EmployeeID, FirstName, LastName, Salary
+        FROM Employees
+        WHERE Salary > (SELECT AVG(Salary) FROM Employees)
+        </pre>
+    <table>
+        <tr>
+            <th>Employee ID</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Salary</th>
+        </tr>
+        {% for row in data %}
+        <tr>
+            <td>{{ row[0] }}</td>
+            <td>{{ row[1] }}</td>
+            <td>{{ row[2] }}</td>
+            <td>{{ row[3] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
+
+

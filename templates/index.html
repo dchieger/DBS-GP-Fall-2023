@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home Page</title>
+    <style>
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .button {
+            padding: 10px 20px;
+            font-size: 16px;
+            text-align: center;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<p>TOTAL RECORDS</p>
+<p>Total records in Members Table: {{ total_rec_members }}</p>
+<p>Total records in Employees Table: {{ total_rec_employees }}</p>
+<p>Total records in ProductInventory Table: {{ total_rec_product_inventory }}</p>
+<p>Total records in EquipmentInventory Table: {{ total_rec_equipment_inventory }}</p>
+<p>Total records in Transactions Table: {{ total_rec_transaction }}</p>
+<p>Total records in LostAndFound Table: {{ total_rec_lost }}</p>
+<p>Total records in VisitorsLog Table: {{ total_rec_visitors }}</p>
+<p>Total records in Classes Table: {{ total_rec_classes }}</p>
+<p>Total records in all tables: {{ total_rec_all }}</p>
+
+    <!-- Navigation Buttons Section -->
+    <div class="button-container">
+        <h2>TABLES</h2>
+        <div class="button-block">
+            <button class="button" onclick="location.href='/classes'">Classes</button>
+            <button class="button" onclick="location.href='/employees'">Employees</button>
+            <button class="button" onclick="location.href='/equipment_inventory'">Equipment Inventory</button>
+            <button class="button" onclick="location.href='/lost_and_found'">Lost and Found</button>
+            <button class="button" onclick="location.href='/members'">Members</button>
+            <button class="button" onclick="location.href='/product_inventory'">Product Inventory</button>
+            <button class="button" onclick="location.href='/salary_stats'">Salary Statistics</button>
+            <button class="button" onclick="location.href='/transactions'">Transactions</button>
+            <button class="button" onclick="location.href='/visitors_log'">Visitors Log</button>
+        </div>
+    </div>
+
+    <!-- Generate Records Section -->
+    <div class="button-container">
+        <h2>GENERATE RECORDS</h2>
+        <div class="button-block">
+            <button class="button" onclick="generateMembers(10)">Generate 10 Members</button>
+            <button class="button" onclick="generateEmployees(10)">Generate 10 Employees</button>
+            <button class="button" onclick="generateProducts(10)">Generate 10 Products</button>
+            <button class="button" onclick="generateEquipment(10)">Generate 10 Equipment</button>
+            <button class="button" onclick="generateTransactions(10)">Generate 10 Transactions</button>
+            <button class="button" onclick="generateLostAndFoundItems(10)">Generate 10 Lost and Found Items</button>
+            <button class="button" onclick="generateVisitorsLogEntries(10)">Generate 10 Visitors Log Entries</button>
+             <button class="button" onclick="generateClasses(10)">Generate 10 Classes</button>
+        </div>
+    </div>
+
+    <script>
+        function callPythonFunction(functionName, parameter) {
+            // Make an AJAX request to call the Python function
+            fetch('/call_function', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    function: functionName,
+                    parameter: parameter
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert(`Python function ${functionName} called successfully.`);
+                } else {
+                    alert(`Failed to call Python function ${functionName}.`);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(`An error occurred while calling Python function ${functionName}.`);
+            });
+        }
+
+        function generateMembers(count) {
+            callPythonFunction('gen_x_members', count);
+        }
+
+        function generateEmployees(count) {
+            callPythonFunction('gen_x_employees', count);
+        }
+
+        function generateProducts(count) {
+            callPythonFunction('gen_x_products', count);
+        }
+
+        function generateEquipment(count) {
+            callPythonFunction('gen_x_equipment', count);
+        }
+
+        function generateTransactions(count) {
+            callPythonFunction('gen_x_transactions', count);
+        }
+
+        function generateLostAndFoundItems(count) {
+            callPythonFunction('gen_x_lost_and_found_items', count);
+        }
+
+        function generateVisitorsLogEntries(count) {
+            callPythonFunction('gen_x_visitors_log_entries', count);
+        }
+
+        function generateClasses(count) {
+            callPythonFunction('gen_x_classes', count);
+        }
+    </script>
+</body>
+</html>
