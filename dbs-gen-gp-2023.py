@@ -47,8 +47,8 @@ It creates the following tables:
 
 After each table is created, a commit is made to the database to save the changes, and a message is printed to the console indicating the successful creation of the table.
 """
-def create_tables():
-    
+
+def create_member_table():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS members (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -64,7 +64,8 @@ def create_tables():
     """)
     connection.commit()
     print('members table created successfully')
-    
+
+def create_employees_table():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS employees (
             employee_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -77,7 +78,8 @@ def create_tables():
     """)
     connection.commit()
     print('employees table created successfully')
-    
+
+def create_courses_table():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS courses (
             course_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -86,7 +88,8 @@ def create_tables():
     """)
     connection.commit()
     print('courses table created successfully')
-    
+
+def create_equipment_table():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS equipment (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -98,7 +101,8 @@ def create_tables():
     """)
     connection.commit()
     print('equipment table created successfully')
-    
+
+def create_transactions_table():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS transactions (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -114,7 +118,8 @@ def create_tables():
     """)
     connection.commit()
     print('transactions table created successfully')
-    
+
+def create_classes_table():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS classes (
             class_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -130,7 +135,9 @@ def create_tables():
     """)
     connection.commit()
     print('classes table created successfully')
-    
+
+def create_attendance_table():
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS attendance (
             attendance_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -143,8 +150,19 @@ def create_tables():
         )
     """)
     connection.commit()
-    print('attendance table created successfully')
 
+def create_class_has_equipment_table():
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS class_has_equipment (
+            class_id INT,
+            equipment_id INT,
+            FOREIGN KEY (class_id) REFERENCES classes(class_id),
+            FOREIGN KEY (equipment_id) REFERENCES equipment(id)
+        )
+    """)
+    connection.commit()
+    print('class_has_equipment table created successfully')
+    
 def gen_x_members(x):
     
     for new_member in range(x):
@@ -337,6 +355,19 @@ def get_random_class_id():
     random_class_id = random.randint(1, total_classes)
     return random_class_id
 
+def get_random_equipment_id():
+    # Check the number of rows in the equipment table
+    cursor.execute("SELECT COUNT(*) FROM equipment")
+    total_equipment = cursor.fetchone()[0]
+    
+    if total_equipment == 0:
+        print("No equipment found.")
+        return None
+    
+    # Generate a random primary key within the range of existing equipment
+    random_equipment_id = random.randint(1, total_equipment)
+    return random_equipment_id
+
 def random_course_id():
     cursor.execute("SELECT COUNT(*) FROM courses")
     total_courses = cursor.fetchone()[0]
@@ -474,9 +505,6 @@ def get_totals():
     print(f'Total records in Attendance Table: {total_rec_attendance}')
     print(f'Total records in all tables: {total_rec_all}')
 
-'''
-A report query that uses a JOIN (any type) to report on some aggregate value based on a group by clause.
-'''
 def get_class_attendance():
     # Write the SQL query
     query = """
@@ -641,14 +669,37 @@ def create_total_transactions_amount_procedure():
     cursor.execute(query)
     print("Stored procedure 'total_transactions_amount' created successfully.")
 
-#create_tables()
-gen_x_members(999)
-gen_x_employees(999)
-gen_x_courses(999)
-gen_x_classes(999)
-gen_x_transaction(999)
-gen_x_attendance(999)
-gen_x_equipment(999)
-    
-print_em_out()
-get_totals()
+def genesis_boot(x):
+    # Create tables
+    create_member_table()
+    print("create_member_table...OK")
+    create_employees_table()
+    print("create_employees_table...OK")
+    create_courses_table()
+    print("create_courses_table...OK")
+    create_equipment_table()
+    print("create_equipment_table...OK")
+    create_transactions_table()
+    print("create_transactions_table...OK")
+    create_classes_table()
+    print("create_classes_table...OK")
+    create_attendance_table()
+    print("create_attendance_table...OK")
+    create_class_has_equipment_table()
+    print("create_class_has_equipment_table...OK")
+
+    # Generate data
+    gen_x_members(x)
+    print("gen_x_members...OK")
+    gen_x_employees(x)
+    print("gen_x_employees...OK")
+    gen_x_courses(x)
+    print("gen_x_courses...OK")
+    gen_x_classes(x)
+    print("gen_x_classes...OK")
+    gen_x_transaction(x)
+    print("gen_x_transaction...OK")
+    gen_x_attendance(x)
+    print("gen_x_attendance...OK")
+    gen_x_equipment(x)
+    print("gen_x_equipment...OK")
