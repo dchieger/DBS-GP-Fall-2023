@@ -6,6 +6,8 @@
 <body>
     <h1>Employee Classes Report</h1>
     <pre>
+        A report query that uses a JOIN (any type) to report on some aggregate value based on a group by clause.
+        
         SELECT E.EmployeeID, E.FirstName, E.LastName, COUNT(C.ClassID) as NumberOfClasses
         FROM Employees E
         JOIN Classes C ON E.EmployeeID = C.EmployeeID

@@ -6,6 +6,8 @@
 <body>
     <h1>Employees with Above Average Salary</h1>
     <pre>
+        A query that includes a subquery.
+        
         SELECT EmployeeID, FirstName, LastName, Salary
         FROM Employees
         WHERE Salary > (SELECT AVG(Salary) FROM Employees)

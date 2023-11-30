@@ -401,6 +401,7 @@ def genesis():
 
     #TRIGGER
     create_salary_statistics_trigger()
+    create_increase_salaries_procedure()
 
     create_product_inventory_table()
     create_equipment_inventory_table()
@@ -497,7 +498,7 @@ def create_employee_classes_view():
         print("View 'EmployeeClassesView' created successfully.")
     except mysql.connector.ProgrammingError:
         print("View 'EmployeeClassesView' already exists.")
-
+#requirment 4
 def view_employee_classes_view():
     query = "SELECT * FROM EmployeeClassesView"
     cursor.execute(query)
@@ -515,6 +516,7 @@ def get_employees_with_above_average_salary():
     result = cursor.fetchall()
     return result
 
+#requirement 5
 #A stored procedure that can be called by a query to perform some math operation on the data and returns a value(s).
 def create_total_transaction_amount_procedure():
     query = """
@@ -529,6 +531,26 @@ def create_total_transaction_amount_procedure():
     except mysql.connector.ProgrammingError:
         print("Stored procedure 'TotalTransactionAmount' already exists.")
 
+def get_total_transaction_amount():
+    # Ensure the stored procedure exists
+    create_total_transaction_amount_procedure()
+
+    # Call the stored procedure
+    cursor.callproc('TotalTransactionAmount')
+
+    # Fetch the result
+    result = []
+    for result_set in cursor.stored_results():
+        result = result_set.fetchall()
+
+    # Return the total transaction amount
+    if result:
+        total_amount = result[0][0]
+        return total_amount
+    else:
+        return None
+
+#Requirement 6
 # (X1) (Xs connected) A stored procedure that uses a cursor to access and manipulate (update/change) data.
 def create_increase_salaries_procedure():
     query = """
@@ -562,17 +584,16 @@ def create_increase_salaries_procedure():
 # (X2) demo the procedure
 def call_increase_salaries_procedure(increase_percentage):
     query = "CALL IncreaseSalaries(%s)"
-    data = (increase_percentage, )
+    data = (increase_percentage,)  # wrap the integer in a tuple
     cursor.execute(query, data)
     print(f"Stored procedure 'IncreaseSalaries' called with parameter {increase_percentage}.")
 
 # (X3) actually show the procedure works
-def print_employee_salaries():
+def get_employee_salaries():
     query = "SELECT FirstName, LastName, Salary FROM Employees LIMIT 5"
     cursor.execute(query)
     result = cursor.fetchall()
-    for row in result:
-        print(f"\n{row[0]} {row[1]}: {row[2]}\n")
+    return result
 
 # (Y1) Create a trigger to track the total and avg salary of all employees and log it 
 def create_salary_statistics_trigger():
@@ -611,16 +632,14 @@ def create_salary_statistics_trigger():
         print("Trigger 'update_salary_statistics' already exists.")
 
 # (Y2) View the triggers and how they have effected the database      
-def print_salary_statistics():
-    query = "SELECT * FROM EmployeeSalaryStatistics"
+def get_last_salary_statistics():
+    query = "SELECT * FROM EmployeeSalaryStatistics ORDER BY id DESC LIMIT 1"
     cursor.execute(query)
-    result = cursor.fetchall()
-    if len(result) == 0:
-        print("NOTHING HERE")
-    else:
-        for row in result:
-            print(f"Total Salary: {row[1]}, Average Salary: {row[2]}")
+    result = cursor.fetchone()
+    return result
 
+#(Y3)
 
 #genesis()
 view_employee_classes_view()
+create_increase_salaries_procedure()

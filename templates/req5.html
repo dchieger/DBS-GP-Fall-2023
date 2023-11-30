@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Total Transactions</title>
+</head>
+<h1>Sum Transactions</h1>
+<pre>
+    A stored procedure that can be called by a query to perform some math operation on the data and returns a value(s).
+
+    CREATE PROCEDURE TotalTransactionAmount()
+    BEGIN
+        SELECT SUM(Amount) AS TotalAmount FROM Transaction;
+    END;
+
+    </pre>
+<body>
+    <h2>Before</h2>
+    <p>{{ before_total_amount }}</p>
+
+    <p>Adding 10 transactions to transactions table...</p>
+    <h2>After</h2>
+    <p>{{ after_total_amount }}</p>
+</body>
+</html>

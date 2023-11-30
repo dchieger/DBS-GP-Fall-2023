@@ -174,7 +174,7 @@ def display_classes():
 
 #Requirement 1
 @app.route('/req1')
-def report():
+def req1():
     report_data = ss.report_employee_classes()
     return render_template('req1.html', report_data=report_data)
 
@@ -187,7 +187,7 @@ def req2():
 #Requiremnent 3
 #this is 3 and 4
 @app.route('/req3-4')
-def view():
+def req3_4():
     try:
         ss.create_employee_classes_view()
         print("View 'EmployeeClassesView' created successfully.")
@@ -197,6 +197,44 @@ def view():
     view_report = ss.view_employee_classes_view()
     return render_template('req3-4.html', view_report=view_report)
 
+#Requirment 5
+@app.route('/req5', methods=['GET'])
+def req5():
+    before_total_amount = ss.get_total_transaction_amount()
+    ss.gen_x_transactions(10)
+    after_total_amount = ss.get_total_transaction_amount()
+    return render_template('req5.html', before_total_amount=before_total_amount, after_total_amount=after_total_amount)
+
+
+#Requirement 6
+@app.route('/req6')
+def req6():
+    employees_data_before = ss.get_employee_salaries()
+    ss.call_increase_salaries_procedure(50.0)
+    employees_data_after = ss.get_employee_salaries()
+    return render_template('req6.html', employees_data_before=employees_data_before, employees_data_after=employees_data_after)
+
+@app.route('/req7-8')
+def req7_8():
+    before_trigger = ss.get_last_salary_statistics()
+    ss.gen_x_employees(10)
+    after_trigger = ss.get_last_salary_statistics()
+
+    # Format the data
+    before_trigger = {
+        'id': before_trigger[0],
+        'total_salary': float(before_trigger[1]),
+        'average_salary': float(before_trigger[2]),
+        'date': before_trigger[3].strftime('%Y-%m-%d %H:%M:%S')
+    }
+    after_trigger = {
+        'id': after_trigger[0],
+        'total_salary': float(after_trigger[1]),
+        'average_salary': float(after_trigger[2]),
+        'date': after_trigger[3].strftime('%Y-%m-%d %H:%M:%S')
+    }
+
+    return render_template('req7-8.html', before_trigger=before_trigger, after_trigger=after_trigger)
 @app.route('/')
 def home():
 

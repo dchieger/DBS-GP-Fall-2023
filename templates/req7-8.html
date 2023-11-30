@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Total Transactions</title>
+</head>
+<h1>Sum Transactions</h1>
+<pre>
+    A trigger that updates/inserts data based on an insert. 
+
+    DELIMITER //
+    CREATE TRIGGER UpdateSalaryStatistics
+    AFTER INSERT ON Employees
+    FOR EACH ROW
+    BEGIN
+        DECLARE totalSalary DECIMAL(10, 2);
+        DECLARE averageSalary DECIMAL(10, 2);
+
+        SELECT SUM(Salary) INTO totalSalary FROM Employees;
+        SELECT AVG(Salary) INTO averageSalary FROM Employees;
+
+        INSERT INTO EmployeeSalaryStatistics (TotalSalary, AverageSalary)
+        VALUES (totalSalary, averageSalary);
+    END //
+    DELIMITER;
+
+    A query that demos the trigger.
+
+    SELECT * FROM EmployeeSalaryStatistics
+
+    </pre>
+<body>
+    <h2>Before</h2>
+    <ul>
+        <li>ID: {{ before_trigger.id }}</li>
+        <li>Total Salary: {{ before_trigger.total_salary }}</li>
+        <li>Average Salary: {{ before_trigger.average_salary }}</li>
+        <li>Date: {{ before_trigger.date }}</li>
+    </ul>
+
+    <p>Adding 10 employees to employees table...</p>
+
+    <h2>After</h2>
+    <ul>
+        <li>ID: {{ after_trigger.id }}</li>
+        <li>Total Salary: {{ after_trigger.total_salary }}</li>
+        <li>Average Salary: {{ after_trigger.average_salary }}</li>
+        <li>Date: {{ after_trigger.date }}</li>
+    </ul>
+</body>
+</html>

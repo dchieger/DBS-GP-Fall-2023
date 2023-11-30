@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employees</title>
+</head>
+<h1>Employees</h1>
+<body>
+    <pre>
+        A stored procedure that uses a cursor to access and manipulate (update/change) data.
+        
+        CREATE PROCEDURE IncreaseSalaries(IN increase_percentage DECIMAL(5, 2))
+        BEGIN
+            DECLARE done INT DEFAULT FALSE;
+            DECLARE emp_id INT;
+            DECLARE emp_salary DECIMAL(10, 2);
+            DECLARE cur CURSOR FOR SELECT EmployeeID, Salary FROM Employees;
+            DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+            OPEN cur;
+
+            read_loop: LOOP
+                FETCH cur INTO emp_id, emp_salary;
+                IF done THEN
+                    LEAVE read_loop;
+                END IF;
+                UPDATE Employees SET Salary = emp_salary * (1 + increase_percentage / 100) WHERE EmployeeID = emp_id;
+            END LOOP;
+
+            CLOSE cur;
+        END;
+
+        Show the function working
+        
+        query = "CALL IncreaseSalaries(%s)"
+        data = (increase_percentage)
+    </pre>
+    <h2>Before</h2>
+    <table>
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Salary</th>
+        </tr>
+        {% for row in employees_data_before %}
+        <tr>
+            <td>{{ row[0] }}</td>
+            <td>{{ row[1] }}</td>
+            <td>{{ row[2] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <h2>After</h2>
+    <table>
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Salary</th>
+        </tr>
+        {% for row in employees_data_after %}
+        <tr>
+            <td>{{ row[0] }}</td>
+            <td>{{ row[1] }}</td>
+            <td>{{ row[2] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
